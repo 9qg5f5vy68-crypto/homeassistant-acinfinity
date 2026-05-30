@@ -305,6 +305,9 @@
       },
       "sunrise_timer_enabled": {
         "name": "Sunrise/Sunset Enabled"
+      },
+      "water_detection_enabled": {
+        "name": "Water Detection Enabled"
       }
     },
     "time": {

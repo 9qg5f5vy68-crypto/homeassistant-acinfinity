@@ -64,6 +64,14 @@ class AtType:
     CYCLE = 6
     SCHEDULE = 7
     VPD = 8
+    CO2 = 9
+    CO2_FAN = 10
+    MOISTURE = 11
+    WATER_TEMP = 12
+    PH = 13
+    EC = 14
+    WATER_DETECT = 15
+
 
 
 # noinspection SpellCheckingInspection
