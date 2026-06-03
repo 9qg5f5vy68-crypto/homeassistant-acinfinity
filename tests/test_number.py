@@ -339,6 +339,294 @@ class TestNumbers:
         )
         test_objects.refresh_mock.assert_called()
 
+    @pytest.mark.parametrize("port", [1, 2, 3, 4])
+    async def test_async_setup_ec_tds_low_value_ec_ms_created_for_ai_port(self, setup, port):
+        """EC low value number entity is created only for AI devices in EC mode."""
+        test_objects: ACTestObjects = setup
+
+        for ai_port in [1, 2, 3, 4]:
+            ai_control = dict(test_objects.ac_infinity._device_controls[(str(DEVICE_ID), 1)])
+            ai_control[DeviceControlKey.AT_TYPE] = 2
+            test_objects.ac_infinity._device_controls[(str(AI_DEVICE_ID), ai_port)] = ai_control
+
+        test_objects.ac_infinity._device_controls[(str(AI_DEVICE_ID), port)][DeviceControlKey.AT_TYPE] = 14
+
+        entity = await execute_and_get_device_entity(
+            setup,
+            async_setup_entry,
+            port,
+            DeviceControlKey.EC_TDS_LOW_VALUE_EC_MS,
+            AI_MAC_ADDR,
+        )
+
+        assert isinstance(entity, ACInfinityDeviceNumberEntity)
+        assert entity.unique_id == f"{DOMAIN}_{AI_MAC_ADDR}_port_{port}_{DeviceControlKey.EC_TDS_LOW_VALUE_EC_MS}"
+        assert entity.entity_description.native_min_value == 0
+        assert entity.entity_description.native_max_value == 100
+        assert entity.device_info is not None
+
+    @pytest.mark.parametrize("value,expected", [(25, 25), (0, 0), (None, 0), (100, 100)])
+    @pytest.mark.parametrize("port", [1, 2, 3, 4])
+    async def test_async_update_ai_port_ec_tds_low_value_ec_ms_correct(self, setup, port, value, expected):
+        """EC low value is read from AI control payload."""
+        test_objects: ACTestObjects = setup
+
+        for ai_port in [1, 2, 3, 4]:
+            ai_control = dict(test_objects.ac_infinity._device_controls[(str(DEVICE_ID), 1)])
+            ai_control[DeviceControlKey.AT_TYPE] = 14
+            test_objects.ac_infinity._device_controls[(str(AI_DEVICE_ID), ai_port)] = ai_control
+
+        entity = await execute_and_get_device_entity(
+            setup,
+            async_setup_entry,
+            port,
+            DeviceControlKey.EC_TDS_LOW_VALUE_EC_MS,
+            AI_MAC_ADDR,
+        )
+
+        test_objects.ac_infinity._device_controls[(str(AI_DEVICE_ID), port)][DeviceControlKey.EC_TDS_LOW_VALUE_EC_MS] = value
+        entity._handle_coordinator_update()
+
+        assert entity.native_value == expected
+        test_objects.write_ha_mock.assert_called()
+
+    @pytest.mark.parametrize("value", [0, 25, 100])
+    @pytest.mark.parametrize("port", [1, 2, 3, 4])
+    async def test_async_set_native_value_ai_port_ec_tds_low_value_ec_ms(self, setup, port, value):
+        """Setting EC low value writes the expected control payload."""
+        test_objects: ACTestObjects = setup
+
+        for ai_port in [1, 2, 3, 4]:
+            ai_control = dict(test_objects.ac_infinity._device_controls[(str(DEVICE_ID), 1)])
+            ai_control[DeviceControlKey.AT_TYPE] = 14
+            test_objects.ac_infinity._device_controls[(str(AI_DEVICE_ID), ai_port)] = ai_control
+
+        entity = await execute_and_get_device_entity(
+            setup,
+            async_setup_entry,
+            port,
+            DeviceControlKey.EC_TDS_LOW_VALUE_EC_MS,
+            AI_MAC_ADDR,
+        )
+
+        await entity.async_set_native_value(value)
+
+        test_objects.port_control_set_mock.assert_called_with(
+            entity._device, DeviceControlKey.EC_TDS_LOW_VALUE_EC_MS, value
+        )
+        test_objects.refresh_mock.assert_called()
+
+    @pytest.mark.parametrize("setting", [DeviceControlKey.PH_HIGH_VALUE, DeviceControlKey.PH_LOW_VALUE])
+    @pytest.mark.parametrize("port", [1, 2, 3, 4])
+    async def test_async_setup_ph_value_created_for_ai_port(self, setup, setting, port):
+        """pH value number entities are created only for AI devices in pH mode."""
+        test_objects: ACTestObjects = setup
+
+        for ai_port in [1, 2, 3, 4]:
+            ai_control = dict(test_objects.ac_infinity._device_controls[(str(DEVICE_ID), 1)])
+            ai_control[DeviceControlKey.AT_TYPE] = 2
+            test_objects.ac_infinity._device_controls[(str(AI_DEVICE_ID), ai_port)] = ai_control
+
+        test_objects.ac_infinity._device_controls[(str(AI_DEVICE_ID), port)][DeviceControlKey.AT_TYPE] = 13
+
+        entity = await execute_and_get_device_entity(
+            setup,
+            async_setup_entry,
+            port,
+            setting,
+            AI_MAC_ADDR,
+        )
+
+        assert isinstance(entity, ACInfinityDeviceNumberEntity)
+        assert entity.unique_id == f"{DOMAIN}_{AI_MAC_ADDR}_port_{port}_{setting}"
+        assert entity.entity_description.native_min_value == 0
+        assert entity.entity_description.native_max_value == 14
+        assert entity.entity_description.native_step == 0.1
+        assert entity.device_info is not None
+
+    @pytest.mark.parametrize("setting", [DeviceControlKey.PH_HIGH_VALUE, DeviceControlKey.PH_LOW_VALUE])
+    @pytest.mark.parametrize("value,expected", [(65, 6.5), (0, 0), (None, 0), (140, 14)])
+    @pytest.mark.parametrize("port", [1, 2, 3, 4])
+    async def test_async_update_ai_port_ph_value_correct(self, setup, setting, port, value, expected):
+        """pH values are read from AI control payload with one decimal precision."""
+        test_objects: ACTestObjects = setup
+
+        for ai_port in [1, 2, 3, 4]:
+            ai_control = dict(test_objects.ac_infinity._device_controls[(str(DEVICE_ID), 1)])
+            ai_control[DeviceControlKey.AT_TYPE] = 13
+            test_objects.ac_infinity._device_controls[(str(AI_DEVICE_ID), ai_port)] = ai_control
+
+        entity = await execute_and_get_device_entity(
+            setup,
+            async_setup_entry,
+            port,
+            setting,
+            AI_MAC_ADDR,
+        )
+
+        test_objects.ac_infinity._device_controls[(str(AI_DEVICE_ID), port)][setting] = value
+        entity._handle_coordinator_update()
+
+        assert entity.native_value == expected
+        test_objects.write_ha_mock.assert_called()
+
+    @pytest.mark.parametrize("setting", [DeviceControlKey.PH_HIGH_VALUE, DeviceControlKey.PH_LOW_VALUE])
+    @pytest.mark.parametrize("value,expected", [(0, 0), (6.5, 65), (14, 140)])
+    @pytest.mark.parametrize("port", [1, 2, 3, 4])
+    async def test_async_set_native_value_ai_port_ph_value(self, setup, setting, port, value, expected):
+        """Setting pH value writes the expected tenths-scaled control payload."""
+        test_objects: ACTestObjects = setup
+
+        for ai_port in [1, 2, 3, 4]:
+            ai_control = dict(test_objects.ac_infinity._device_controls[(str(DEVICE_ID), 1)])
+            ai_control[DeviceControlKey.AT_TYPE] = 13
+            test_objects.ac_infinity._device_controls[(str(AI_DEVICE_ID), ai_port)] = ai_control
+
+        entity = await execute_and_get_device_entity(
+            setup,
+            async_setup_entry,
+            port,
+            setting,
+            AI_MAC_ADDR,
+        )
+
+        await entity.async_set_native_value(value)
+
+        test_objects.port_control_set_mock.assert_called_with(
+            entity._device, setting, expected
+        )
+        test_objects.refresh_mock.assert_called()
+
+    @pytest.mark.parametrize(
+        "setting",
+        [
+            DeviceControlKey.WATER_TEMP_HIGH_VALUE,
+            DeviceControlKey.WATER_TEMP_LOW_VALUE,
+            DeviceControlKey.WATER_TEMP_HIGH_VALUE_F,
+            DeviceControlKey.WATER_TEMP_LOW_VALUE_F,
+        ],
+    )
+    @pytest.mark.parametrize("port", [1, 2, 3, 4])
+    async def test_async_setup_water_temp_value_created_for_ai_port(self, setup, setting, port):
+        """Water temp value entities are created only for AI devices in water temp mode."""
+        test_objects: ACTestObjects = setup
+
+        for ai_port in [1, 2, 3, 4]:
+            ai_control = dict(test_objects.ac_infinity._device_controls[(str(DEVICE_ID), 1)])
+            ai_control[DeviceControlKey.AT_TYPE] = 2
+            test_objects.ac_infinity._device_controls[(str(AI_DEVICE_ID), ai_port)] = ai_control
+
+        test_objects.ac_infinity._device_controls[(str(AI_DEVICE_ID), port)][DeviceControlKey.AT_TYPE] = 12
+
+        entity = await execute_and_get_device_entity(
+            setup,
+            async_setup_entry,
+            port,
+            setting,
+            AI_MAC_ADDR,
+        )
+
+        assert isinstance(entity, ACInfinityDeviceNumberEntity)
+        assert entity.unique_id == f"{DOMAIN}_{AI_MAC_ADDR}_port_{port}_{setting}"
+        assert entity.device_info is not None
+
+    @pytest.mark.parametrize(
+        "setting,value,expected",
+        [
+            (DeviceControlKey.WATER_TEMP_HIGH_VALUE, 35, 35),
+            (DeviceControlKey.WATER_TEMP_LOW_VALUE, 20, 20),
+            (DeviceControlKey.WATER_TEMP_HIGH_VALUE_F, 95, 95),
+            (DeviceControlKey.WATER_TEMP_LOW_VALUE_F, 68, 68),
+            (DeviceControlKey.WATER_TEMP_HIGH_VALUE, None, 0),
+            (DeviceControlKey.WATER_TEMP_HIGH_VALUE_F, None, 0),
+        ],
+    )
+    @pytest.mark.parametrize("port", [1, 2, 3, 4])
+    async def test_async_update_ai_port_water_temp_value_correct(self, setup, setting, port, value, expected):
+        """Water temp values are read from AI control payload."""
+        test_objects: ACTestObjects = setup
+
+        for ai_port in [1, 2, 3, 4]:
+            ai_control = dict(test_objects.ac_infinity._device_controls[(str(DEVICE_ID), 1)])
+            ai_control[DeviceControlKey.AT_TYPE] = 12
+            test_objects.ac_infinity._device_controls[(str(AI_DEVICE_ID), ai_port)] = ai_control
+
+        entity = await execute_and_get_device_entity(
+            setup,
+            async_setup_entry,
+            port,
+            setting,
+            AI_MAC_ADDR,
+        )
+
+        test_objects.ac_infinity._device_controls[(str(AI_DEVICE_ID), port)][setting] = value
+        entity._handle_coordinator_update()
+
+        assert entity.native_value == expected
+        test_objects.write_ha_mock.assert_called()
+
+    @pytest.mark.parametrize(
+        "setting,value,expected_payload",
+        [
+            (
+                DeviceControlKey.WATER_TEMP_HIGH_VALUE,
+                30,
+                {
+                    DeviceControlKey.WATER_TEMP_HIGH_VALUE: 30,
+                    DeviceControlKey.WATER_TEMP_HIGH_VALUE_F: 86,
+                },
+            ),
+            (
+                DeviceControlKey.WATER_TEMP_LOW_VALUE,
+                10,
+                {
+                    DeviceControlKey.WATER_TEMP_LOW_VALUE: 10,
+                    DeviceControlKey.WATER_TEMP_LOW_VALUE_F: 50,
+                },
+            ),
+            (
+                DeviceControlKey.WATER_TEMP_HIGH_VALUE_F,
+                86,
+                {
+                    DeviceControlKey.WATER_TEMP_HIGH_VALUE_F: 86,
+                    DeviceControlKey.WATER_TEMP_HIGH_VALUE: 30,
+                },
+            ),
+            (
+                DeviceControlKey.WATER_TEMP_LOW_VALUE_F,
+                50,
+                {
+                    DeviceControlKey.WATER_TEMP_LOW_VALUE_F: 50,
+                    DeviceControlKey.WATER_TEMP_LOW_VALUE: 10,
+                },
+            ),
+        ],
+    )
+    @pytest.mark.parametrize("port", [1, 2, 3, 4])
+    async def test_async_set_native_value_ai_port_water_temp_value_coupled(
+        self, setup, setting, port, value, expected_payload
+    ):
+        """Setting water temp values writes coupled C/F payload fields."""
+        test_objects: ACTestObjects = setup
+
+        for ai_port in [1, 2, 3, 4]:
+            ai_control = dict(test_objects.ac_infinity._device_controls[(str(DEVICE_ID), 1)])
+            ai_control[DeviceControlKey.AT_TYPE] = 12
+            test_objects.ac_infinity._device_controls[(str(AI_DEVICE_ID), ai_port)] = ai_control
+
+        entity = await execute_and_get_device_entity(
+            setup,
+            async_setup_entry,
+            port,
+            setting,
+            AI_MAC_ADDR,
+        )
+
+        await entity.async_set_native_value(value)
+
+        test_objects.port_control_sets_mock.assert_called_with(entity._device, expected_payload)
+        test_objects.refresh_mock.assert_called()
+
     @pytest.mark.parametrize(
         "key",
         [DeviceControlKey.TIMER_DURATION_TO_ON, DeviceControlKey.TIMER_DURATION_TO_OFF],

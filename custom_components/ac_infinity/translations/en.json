@@ -156,6 +156,21 @@
       "moisture_low_trigger": {
         "name": "Moisture Low Trigger"
       },
+      "ec_tds_low_trigger": {
+        "name": "EC Low Trigger"
+      },
+      "ph_high_trigger": {
+        "name": "pH High Trigger"
+      },
+      "ph_low_trigger": {
+        "name": "pH Low Trigger"
+      },
+      "water_temp_high_trigger": {
+        "name": "Water Temp High Trigger"
+      },
+      "water_temp_low_trigger": {
+        "name": "Water Temp Low Trigger"
+      },
       "auto_mode_temp_low_trigger": {
         "name": "Temperature Low Trigger"
       },
@@ -326,6 +341,21 @@
       },
       "moisture_low_enabled": {
         "name": "Moisture Low Trigger Enabled"
+      },
+      "ec_tds_low_enabled": {
+        "name": "EC Low Trigger Enabled"
+      },
+      "ph_high_enabled": {
+        "name": "pH High Trigger Enabled"
+      },
+      "ph_low_enabled": {
+        "name": "pH Low Trigger Enabled"
+      },
+      "water_temp_high_enabled": {
+        "name": "Water Temp High Trigger Enabled"
+      },
+      "water_temp_low_enabled": {
+        "name": "Water Temp Low Trigger Enabled"
       },
       "water_detection_enabled": {
         "name": "Water Detection Enabled"

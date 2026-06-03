@@ -395,6 +395,323 @@ class TestSwitches:
         )
         test_objects.refresh_mock.assert_called()
 
+    @pytest.mark.parametrize("port", [1, 2, 3, 4])
+    async def test_async_setup_ec_tds_low_switch_ec_created_for_ai_port(self, setup, port):
+        """EC low switch entity is created only for AI devices in EC mode."""
+        test_objects: ACTestObjects = setup
+
+        for ai_port in [1, 2, 3, 4]:
+            ai_control = deepcopy(test_objects.ac_infinity._device_controls[(str(DEVICE_ID), 1)])
+            ai_control[DeviceControlKey.AT_TYPE] = 2
+            test_objects.ac_infinity._device_controls[(str(AI_DEVICE_ID), ai_port)] = ai_control
+
+        test_objects.ac_infinity._device_controls[(str(AI_DEVICE_ID), port)][DeviceControlKey.AT_TYPE] = 14
+
+        entity = await execute_and_get_device_entity(
+            setup,
+            async_setup_entry,
+            port,
+            DeviceControlKey.EC_TDS_LOW_SWITCH_EC,
+            AI_MAC_ADDR,
+        )
+
+        assert entity.unique_id == f"{DOMAIN}_{AI_MAC_ADDR}_port_{port}_{DeviceControlKey.EC_TDS_LOW_SWITCH_EC}"
+        assert entity.device_info is not None
+
+    @pytest.mark.parametrize("value,expected", [(1, True), (0, False), (None, False)])
+    @pytest.mark.parametrize("port", [1, 2, 3, 4])
+    async def test_async_update_ai_port_ec_tds_low_switch_ec_value_correct(self, setup, port, value, expected):
+        """EC low switch value is read from AI control payload."""
+        test_objects: ACTestObjects = setup
+
+        for ai_port in [1, 2, 3, 4]:
+            ai_control = deepcopy(test_objects.ac_infinity._device_controls[(str(DEVICE_ID), 1)])
+            ai_control[DeviceControlKey.AT_TYPE] = 14
+            test_objects.ac_infinity._device_controls[(str(AI_DEVICE_ID), ai_port)] = ai_control
+
+        entity = await execute_and_get_device_entity(
+            setup,
+            async_setup_entry,
+            port,
+            DeviceControlKey.EC_TDS_LOW_SWITCH_EC,
+            AI_MAC_ADDR,
+        )
+
+        test_objects.ac_infinity._device_controls[(str(AI_DEVICE_ID), port)][
+            DeviceControlKey.EC_TDS_LOW_SWITCH_EC
+        ] = value
+
+        entity._handle_coordinator_update()
+
+        assert isinstance(entity, ACInfinityDeviceSwitchEntity)
+        assert entity.is_on == expected
+        test_objects.write_ha_mock.assert_called()
+
+    @pytest.mark.parametrize("expected", [1])
+    @pytest.mark.parametrize("port", [1, 2, 3, 4])
+    async def test_async_turn_on_ai_port_ec_tds_low_switch_ec(self, setup, port, expected):
+        """EC low switch turn on updates AI control."""
+        test_objects: ACTestObjects = setup
+
+        for ai_port in [1, 2, 3, 4]:
+            ai_control = deepcopy(test_objects.ac_infinity._device_controls[(str(DEVICE_ID), 1)])
+            ai_control[DeviceControlKey.AT_TYPE] = 14
+            test_objects.ac_infinity._device_controls[(str(AI_DEVICE_ID), ai_port)] = ai_control
+
+        entity = await execute_and_get_device_entity(
+            setup,
+            async_setup_entry,
+            port,
+            DeviceControlKey.EC_TDS_LOW_SWITCH_EC,
+            AI_MAC_ADDR,
+        )
+
+        assert isinstance(entity, ACInfinityDeviceSwitchEntity)
+        await entity.async_turn_on()
+
+        test_objects.port_control_set_mock.assert_called_with(
+            entity._device, DeviceControlKey.EC_TDS_LOW_SWITCH_EC, expected
+        )
+        test_objects.refresh_mock.assert_called()
+
+    @pytest.mark.parametrize("expected", [0])
+    @pytest.mark.parametrize("port", [1, 2, 3, 4])
+    async def test_async_turn_off_ai_port_ec_tds_low_switch_ec(self, setup, port, expected):
+        """EC low switch turn off updates AI control."""
+        test_objects: ACTestObjects = setup
+
+        for ai_port in [1, 2, 3, 4]:
+            ai_control = deepcopy(test_objects.ac_infinity._device_controls[(str(DEVICE_ID), 1)])
+            ai_control[DeviceControlKey.AT_TYPE] = 14
+            test_objects.ac_infinity._device_controls[(str(AI_DEVICE_ID), ai_port)] = ai_control
+
+        entity = await execute_and_get_device_entity(
+            setup,
+            async_setup_entry,
+            port,
+            DeviceControlKey.EC_TDS_LOW_SWITCH_EC,
+            AI_MAC_ADDR,
+        )
+
+        assert isinstance(entity, ACInfinityDeviceSwitchEntity)
+        await entity.async_turn_off()
+
+        test_objects.port_control_set_mock.assert_called_with(
+            entity._device, DeviceControlKey.EC_TDS_LOW_SWITCH_EC, expected
+        )
+        test_objects.refresh_mock.assert_called()
+
+    @pytest.mark.parametrize("setting", [DeviceControlKey.PH_HIGH_SWITCH, DeviceControlKey.PH_LOW_SWITCH])
+    @pytest.mark.parametrize("port", [1, 2, 3, 4])
+    async def test_async_setup_ph_switch_created_for_ai_port(self, setup, setting, port):
+        """pH switch entities are created only for AI devices in pH mode."""
+        test_objects: ACTestObjects = setup
+
+        for ai_port in [1, 2, 3, 4]:
+            ai_control = deepcopy(test_objects.ac_infinity._device_controls[(str(DEVICE_ID), 1)])
+            ai_control[DeviceControlKey.AT_TYPE] = 2
+            test_objects.ac_infinity._device_controls[(str(AI_DEVICE_ID), ai_port)] = ai_control
+
+        test_objects.ac_infinity._device_controls[(str(AI_DEVICE_ID), port)][DeviceControlKey.AT_TYPE] = 13
+
+        entity = await execute_and_get_device_entity(
+            setup,
+            async_setup_entry,
+            port,
+            setting,
+            AI_MAC_ADDR,
+        )
+
+        assert entity.unique_id == f"{DOMAIN}_{AI_MAC_ADDR}_port_{port}_{setting}"
+        assert entity.device_info is not None
+
+    @pytest.mark.parametrize("setting", [DeviceControlKey.PH_HIGH_SWITCH, DeviceControlKey.PH_LOW_SWITCH])
+    @pytest.mark.parametrize("value,expected", [(1, True), (0, False), (None, False)])
+    @pytest.mark.parametrize("port", [1, 2, 3, 4])
+    async def test_async_update_ai_port_ph_switch_value_correct(self, setup, setting, port, value, expected):
+        """pH switch values are read from AI control payload."""
+        test_objects: ACTestObjects = setup
+
+        for ai_port in [1, 2, 3, 4]:
+            ai_control = deepcopy(test_objects.ac_infinity._device_controls[(str(DEVICE_ID), 1)])
+            ai_control[DeviceControlKey.AT_TYPE] = 13
+            test_objects.ac_infinity._device_controls[(str(AI_DEVICE_ID), ai_port)] = ai_control
+
+        entity = await execute_and_get_device_entity(
+            setup,
+            async_setup_entry,
+            port,
+            setting,
+            AI_MAC_ADDR,
+        )
+
+        test_objects.ac_infinity._device_controls[(str(AI_DEVICE_ID), port)][setting] = value
+
+        entity._handle_coordinator_update()
+
+        assert isinstance(entity, ACInfinityDeviceSwitchEntity)
+        assert entity.is_on == expected
+        test_objects.write_ha_mock.assert_called()
+
+    @pytest.mark.parametrize("setting", [DeviceControlKey.PH_HIGH_SWITCH, DeviceControlKey.PH_LOW_SWITCH])
+    @pytest.mark.parametrize("expected", [1])
+    @pytest.mark.parametrize("port", [1, 2, 3, 4])
+    async def test_async_turn_on_ai_port_ph_switch(self, setup, setting, port, expected):
+        """pH switch turn on updates AI control."""
+        test_objects: ACTestObjects = setup
+
+        for ai_port in [1, 2, 3, 4]:
+            ai_control = deepcopy(test_objects.ac_infinity._device_controls[(str(DEVICE_ID), 1)])
+            ai_control[DeviceControlKey.AT_TYPE] = 13
+            test_objects.ac_infinity._device_controls[(str(AI_DEVICE_ID), ai_port)] = ai_control
+
+        entity = await execute_and_get_device_entity(
+            setup,
+            async_setup_entry,
+            port,
+            setting,
+            AI_MAC_ADDR,
+        )
+
+        assert isinstance(entity, ACInfinityDeviceSwitchEntity)
+        await entity.async_turn_on()
+
+        test_objects.port_control_set_mock.assert_called_with(
+            entity._device, setting, expected
+        )
+        test_objects.refresh_mock.assert_called()
+
+    @pytest.mark.parametrize("setting", [DeviceControlKey.PH_HIGH_SWITCH, DeviceControlKey.PH_LOW_SWITCH])
+    @pytest.mark.parametrize("expected", [0])
+    @pytest.mark.parametrize("port", [1, 2, 3, 4])
+    async def test_async_turn_off_ai_port_ph_switch(self, setup, setting, port, expected):
+        """pH switch turn off updates AI control."""
+        test_objects: ACTestObjects = setup
+
+        for ai_port in [1, 2, 3, 4]:
+            ai_control = deepcopy(test_objects.ac_infinity._device_controls[(str(DEVICE_ID), 1)])
+            ai_control[DeviceControlKey.AT_TYPE] = 13
+            test_objects.ac_infinity._device_controls[(str(AI_DEVICE_ID), ai_port)] = ai_control
+
+        entity = await execute_and_get_device_entity(
+            setup,
+            async_setup_entry,
+            port,
+            setting,
+            AI_MAC_ADDR,
+        )
+
+        assert isinstance(entity, ACInfinityDeviceSwitchEntity)
+        await entity.async_turn_off()
+
+        test_objects.port_control_set_mock.assert_called_with(
+            entity._device, setting, expected
+        )
+        test_objects.refresh_mock.assert_called()
+
+    @pytest.mark.parametrize("setting", [DeviceControlKey.WATER_TEMP_HIGH_SWITCH, DeviceControlKey.WATER_TEMP_LOW_SWITCH])
+    @pytest.mark.parametrize("port", [1, 2, 3, 4])
+    async def test_async_setup_water_temp_switch_created_for_ai_port(self, setup, setting, port):
+        """Water temp switches are created only for AI devices in water temp mode."""
+        test_objects: ACTestObjects = setup
+
+        for ai_port in [1, 2, 3, 4]:
+            ai_control = deepcopy(test_objects.ac_infinity._device_controls[(str(DEVICE_ID), 1)])
+            ai_control[DeviceControlKey.AT_TYPE] = 2
+            test_objects.ac_infinity._device_controls[(str(AI_DEVICE_ID), ai_port)] = ai_control
+
+        test_objects.ac_infinity._device_controls[(str(AI_DEVICE_ID), port)][DeviceControlKey.AT_TYPE] = 12
+
+        entity = await execute_and_get_device_entity(
+            setup,
+            async_setup_entry,
+            port,
+            setting,
+            AI_MAC_ADDR,
+        )
+
+        assert entity.unique_id == f"{DOMAIN}_{AI_MAC_ADDR}_port_{port}_{setting}"
+        assert entity.device_info is not None
+
+    @pytest.mark.parametrize("setting", [DeviceControlKey.WATER_TEMP_HIGH_SWITCH, DeviceControlKey.WATER_TEMP_LOW_SWITCH])
+    @pytest.mark.parametrize("value,expected", [(1, True), (0, False), (None, False)])
+    @pytest.mark.parametrize("port", [1, 2, 3, 4])
+    async def test_async_update_ai_port_water_temp_switch_value_correct(self, setup, setting, port, value, expected):
+        """Water temp switch values are read from AI control payload."""
+        test_objects: ACTestObjects = setup
+
+        for ai_port in [1, 2, 3, 4]:
+            ai_control = deepcopy(test_objects.ac_infinity._device_controls[(str(DEVICE_ID), 1)])
+            ai_control[DeviceControlKey.AT_TYPE] = 12
+            test_objects.ac_infinity._device_controls[(str(AI_DEVICE_ID), ai_port)] = ai_control
+
+        entity = await execute_and_get_device_entity(
+            setup,
+            async_setup_entry,
+            port,
+            setting,
+            AI_MAC_ADDR,
+        )
+
+        test_objects.ac_infinity._device_controls[(str(AI_DEVICE_ID), port)][setting] = value
+        entity._handle_coordinator_update()
+
+        assert isinstance(entity, ACInfinityDeviceSwitchEntity)
+        assert entity.is_on == expected
+        test_objects.write_ha_mock.assert_called()
+
+    @pytest.mark.parametrize("setting", [DeviceControlKey.WATER_TEMP_HIGH_SWITCH, DeviceControlKey.WATER_TEMP_LOW_SWITCH])
+    @pytest.mark.parametrize("expected", [1])
+    @pytest.mark.parametrize("port", [1, 2, 3, 4])
+    async def test_async_turn_on_ai_port_water_temp_switch(self, setup, setting, port, expected):
+        """Water temp switch turn on updates AI control."""
+        test_objects: ACTestObjects = setup
+
+        for ai_port in [1, 2, 3, 4]:
+            ai_control = deepcopy(test_objects.ac_infinity._device_controls[(str(DEVICE_ID), 1)])
+            ai_control[DeviceControlKey.AT_TYPE] = 12
+            test_objects.ac_infinity._device_controls[(str(AI_DEVICE_ID), ai_port)] = ai_control
+
+        entity = await execute_and_get_device_entity(
+            setup,
+            async_setup_entry,
+            port,
+            setting,
+            AI_MAC_ADDR,
+        )
+
+        assert isinstance(entity, ACInfinityDeviceSwitchEntity)
+        await entity.async_turn_on()
+
+        test_objects.port_control_set_mock.assert_called_with(entity._device, setting, expected)
+        test_objects.refresh_mock.assert_called()
+
+    @pytest.mark.parametrize("setting", [DeviceControlKey.WATER_TEMP_HIGH_SWITCH, DeviceControlKey.WATER_TEMP_LOW_SWITCH])
+    @pytest.mark.parametrize("expected", [0])
+    @pytest.mark.parametrize("port", [1, 2, 3, 4])
+    async def test_async_turn_off_ai_port_water_temp_switch(self, setup, setting, port, expected):
+        """Water temp switch turn off updates AI control."""
+        test_objects: ACTestObjects = setup
+
+        for ai_port in [1, 2, 3, 4]:
+            ai_control = deepcopy(test_objects.ac_infinity._device_controls[(str(DEVICE_ID), 1)])
+            ai_control[DeviceControlKey.AT_TYPE] = 12
+            test_objects.ac_infinity._device_controls[(str(AI_DEVICE_ID), ai_port)] = ai_control
+
+        entity = await execute_and_get_device_entity(
+            setup,
+            async_setup_entry,
+            port,
+            setting,
+            AI_MAC_ADDR,
+        )
+
+        assert isinstance(entity, ACInfinityDeviceSwitchEntity)
+        await entity.async_turn_off()
+
+        test_objects.port_control_set_mock.assert_called_with(entity._device, setting, expected)
+        test_objects.refresh_mock.assert_called()
+
     @pytest.mark.parametrize(
         "setting,value,expected",
         [
