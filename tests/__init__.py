@@ -149,11 +149,11 @@ def setup_entity_mocks(mocker: MockFixture):
     client = ACInfinityClient(HOST, EMAIL, PASSWORD)
     ac_infinity = ACInfinityService(client)
 
-    ac_infinity._controller_properties = CONTROLLER_PROPERTIES_DATA
-    ac_infinity._device_settings = DEVICE_SETTINGS_DATA
-    ac_infinity._sensor_properties = SENSOR_PROPERTIES_DATA
-    ac_infinity._device_properties = DEVICE_PROPERTIES_DATA
-    ac_infinity._device_controls = DEVICE_CONTROLS_DATA
+    ac_infinity._controller_properties = deepcopy(CONTROLLER_PROPERTIES_DATA)
+    ac_infinity._device_settings = deepcopy(DEVICE_SETTINGS_DATA)
+    ac_infinity._sensor_properties = deepcopy(SENSOR_PROPERTIES_DATA)
+    ac_infinity._device_properties = deepcopy(DEVICE_PROPERTIES_DATA)
+    ac_infinity._device_controls = deepcopy(DEVICE_CONTROLS_DATA)
 
     config_entry = ConfigEntry(
         entry_id=ENTRY_ID,

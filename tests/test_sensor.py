@@ -577,12 +577,12 @@ class TestSensors:
 
         test_objects: ACTestObjects = setup
         test_objects.ac_infinity._sensor_properties.pop(
-            (str(AI_DEVICE_ID), PROBE_ACCESS_PORT, SensorType.CONTROLLER_TEMPERATURE_F),
+            (str(AI_DEVICE_ID), PROBE_ACCESS_PORT, SensorType.PROBE_TEMPERATURE_F),
             None,
         )
         test_objects.ac_infinity._sensor_properties[
             (str(AI_DEVICE_ID), PROBE_ACCESS_PORT, SensorType.PROBE_TEMPERATURE_C)
-        ] = SENSOR_PROPERTY_CONTROLLER_TEMP_C
+        ] = SENSOR_PROPERTY_PROBE_TEMP_C
 
         entity = await execute_and_get_sensor_entity(
             setup,
