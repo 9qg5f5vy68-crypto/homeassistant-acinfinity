@@ -73,6 +73,15 @@ def __suitable_fn_device_control_default(entity: ACInfinityEntity, device: ACInf
     )
 
 
+def __suitable_fn_device_control_ai_only(entity: ACInfinityEntity, device: ACInfinityDevice):
+    return (
+        device.controller.is_ai_controller
+        and entity.ac_infinity.get_device_control_exists(
+            device.controller.controller_id, device.device_port, entity.data_key
+        )
+    )
+
+
 def __get_value_fn_device_control_default(entity: ACInfinityEntity, device: ACInfinityDevice):
     return entity.ac_infinity.get_device_control(
         device.controller.controller_id, device.device_port, entity.data_key, 0
@@ -230,6 +239,58 @@ DEVICE_DESCRIPTIONS: list[ACInfinityDeviceSwitchEntityDescription] = [
         get_value_fn=__get_value_fn_device_control_default,
         set_value_fn=__set_value_fn_device_control_default,
         at_type_fn=lambda at_type: at_type == AtType.WATER_DETECT,
+    ),
+    ACInfinityDeviceSwitchEntityDescription(
+        key=DeviceControlKey.PHOTOCELL_SWITCH,
+        device_class=SwitchDeviceClass.SWITCH,
+        on_value=1,
+        off_value=0,
+        icon=None,  # default
+        translation_key="photocell_enabled",
+        enabled_fn=enabled_fn_control,
+        suitable_fn=__suitable_fn_device_control_ai_only,
+        get_value_fn=__get_value_fn_device_control_default,
+        set_value_fn=__set_value_fn_device_control_default,
+        at_type_fn=lambda at_type: at_type == AtType.CO2,
+    ),
+    ACInfinityDeviceSwitchEntityDescription(
+        key=DeviceControlKey.CO2_LOW_SWITCH,
+        device_class=SwitchDeviceClass.SWITCH,
+        on_value=1,
+        off_value=0,
+        icon=None,  # default
+        translation_key="co2_low_enabled",
+        enabled_fn=enabled_fn_control,
+        suitable_fn=__suitable_fn_device_control_ai_only,
+        get_value_fn=__get_value_fn_device_control_default,
+        set_value_fn=__set_value_fn_device_control_default,
+        at_type_fn=lambda at_type: at_type == AtType.CO2,
+    ),
+    ACInfinityDeviceSwitchEntityDescription(
+        key=DeviceControlKey.CO2_FAN_HIGH_SWITCH,
+        device_class=SwitchDeviceClass.SWITCH,
+        on_value=1,
+        off_value=0,
+        icon=None,  # default
+        translation_key="co2_fan_high_enabled",
+        enabled_fn=enabled_fn_control,
+        suitable_fn=__suitable_fn_device_control_ai_only,
+        get_value_fn=__get_value_fn_device_control_default,
+        set_value_fn=__set_value_fn_device_control_default,
+        at_type_fn=lambda at_type: at_type == AtType.CO2_FAN,
+    ),
+    ACInfinityDeviceSwitchEntityDescription(
+        key=DeviceControlKey.MOISTURE_LOW_SWITCH,
+        device_class=SwitchDeviceClass.SWITCH,
+        on_value=1,
+        off_value=0,
+        icon=None,  # default
+        translation_key="moisture_low_enabled",
+        enabled_fn=enabled_fn_control,
+        suitable_fn=__suitable_fn_device_control_ai_only,
+        get_value_fn=__get_value_fn_device_control_default,
+        set_value_fn=__set_value_fn_device_control_default,
+        at_type_fn=lambda at_type: at_type == AtType.MOISTURE,
     ),
     ACInfinityDeviceSwitchEntityDescription(
         key=DeviceControlKey.TARGET_HUMI_SWITCH,

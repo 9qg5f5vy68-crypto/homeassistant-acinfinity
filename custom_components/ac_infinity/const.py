@@ -228,6 +228,7 @@ class DeviceControlKey:
     HUMIDITY = "humidity"
     TARGET_HUMI = "targetHumi"
     TARGET_HUMI_SWITCH = "targetHumiSwitch"
+    PHOTOCELL_SWITCH = "photocellSwitch"
     TREND = "trend"
     T_TREND = "tTrend"
     H_TREND = "hTrend"

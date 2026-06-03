@@ -9,7 +9,11 @@ from homeassistant.components.number import (
     NumberMode,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import Platform, UnitOfTemperature
+from homeassistant.const import (
+    CONCENTRATION_PARTS_PER_MILLION,
+    Platform,
+    UnitOfTemperature,
+)
 from homeassistant.core import HomeAssistant
 
 from custom_components.ac_infinity.const import (
@@ -743,6 +747,54 @@ DEVICE_DESCRIPTIONS: list[ACInfinityDeviceNumberEntityDescription] = [
         get_value_fn=__get_value_fn_device_control_default,
         set_value_fn=__set_value_fn_device_control_default,
         at_type_fn=lambda at_type: at_type == AtType.AUTO
+    ),
+    ACInfinityDeviceNumberEntityDescription(
+        key=DeviceControlKey.CO2_LOW_VALUE,
+        device_class=None,
+        mode=NumberMode.BOX,
+        native_min_value=0,
+        native_max_value=9999,
+        native_step=1,
+        icon=None,
+        translation_key="co2_low_trigger",
+        native_unit_of_measurement=CONCENTRATION_PARTS_PER_MILLION,
+        enabled_fn=enabled_fn_control,
+        suitable_fn=__suitable_fn_device_control_ai_controller,
+        get_value_fn=__get_value_fn_device_control_default,
+        set_value_fn=__set_value_fn_device_control_default,
+        at_type_fn=lambda at_type: at_type == AtType.CO2,
+    ),
+    ACInfinityDeviceNumberEntityDescription(
+        key=DeviceControlKey.CO2_FAN_HIGH_VALUE,
+        device_class=None,
+        mode=NumberMode.BOX,
+        native_min_value=0,
+        native_max_value=9999,
+        native_step=1,
+        icon=None,
+        translation_key="co2_fan_high_trigger",
+        native_unit_of_measurement=CONCENTRATION_PARTS_PER_MILLION,
+        enabled_fn=enabled_fn_control,
+        suitable_fn=__suitable_fn_device_control_ai_controller,
+        get_value_fn=__get_value_fn_device_control_default,
+        set_value_fn=__set_value_fn_device_control_default,
+        at_type_fn=lambda at_type: at_type == AtType.CO2_FAN,
+    ),
+    ACInfinityDeviceNumberEntityDescription(
+        key=DeviceControlKey.MOISTURE_LOW_VALUE,
+        device_class=NumberDeviceClass.MOISTURE,
+        mode=NumberMode.BOX,
+        native_min_value=0,
+        native_max_value=100,
+        native_step=1,
+        icon=MdiIcon.WATER_PERCENT,
+        translation_key="moisture_low_trigger",
+        native_unit_of_measurement=None,
+        enabled_fn=enabled_fn_control,
+        suitable_fn=__suitable_fn_device_control_ai_controller,
+        get_value_fn=__get_value_fn_device_control_default,
+        set_value_fn=__set_value_fn_device_control_default,
+        at_type_fn=lambda at_type: at_type == AtType.MOISTURE,
     ),
     ACInfinityDeviceNumberEntityDescription(
         key=DeviceControlKey.AUTO_TEMP_LOW_TRIGGER,
