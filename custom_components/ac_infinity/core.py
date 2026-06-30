@@ -344,6 +344,7 @@ class ACInfinityService:
             client: The http client to use to make requests to the AC Infinity API
         """
         self._client = client
+        self._update_lock = asyncio.Lock()
 
     def get_device_ids(self) -> list[str]:
         """
@@ -592,6 +593,9 @@ class ACInfinityService:
 
     async def refresh(self) -> None:
         """refreshes the values of properties and settings from the AC infinity API"""
+        if self._update_lock.locked():
+            async with self._update_lock:
+                pass  # wait for any in-progress update to complete
         try_count = 0
         while True:
             try:
@@ -760,32 +764,33 @@ class ACInfinityService:
             device_port: the index of the port on the controller
             key_values: a list of key/value pairs to update, as a tuple of (setting_key, new_value)
         """
-        try_count = 0
-        while True:
-            try:
-                await self._client.update_device_controls(controller_id, device_port, key_values)
-                return
+        async with self._update_lock:
+            try_count = 0
+            while True:
+                try:
+                    await self._client.update_device_controls(controller_id, device_port, key_values)
+                    return
 
-            except (
-                ACInfinityClientCannotConnect,
-                ACInfinityClientRequestFailed,
-                aiohttp.ClientError,
-                asyncio.TimeoutError
-            ) as ex:
+                except (
+                    ACInfinityClientCannotConnect,
+                    ACInfinityClientRequestFailed,
+                    aiohttp.ClientError,
+                    asyncio.TimeoutError
+                ) as ex:
 
-                if try_count < 4:
-                    try_count += 1
-                    _LOGGER.warning("Unable to update device controls. Retry attempt %s/4", str(try_count))
-                    await asyncio.sleep(1)
-                else:
-                    _LOGGER.error(ACINFINITY_API_ERROR, exc_info=ex)
+                    if try_count < 4:
+                        try_count += 1
+                        _LOGGER.warning("Unable to update device controls. Retry attempt %s/4", str(try_count))
+                        await asyncio.sleep(1)
+                    else:
+                        _LOGGER.error(ACINFINITY_API_ERROR, exc_info=ex)
+                        raise
+                except ACInfinityClientInvalidAuth as ex:
+                    _LOGGER.error("Unable to update device controls: Authentication failed", exc_info=ex)
                     raise
-            except ACInfinityClientInvalidAuth as ex:
-                _LOGGER.error("Unable to update device controls: Authentication failed", exc_info=ex)
-                raise
-            except Exception as ex:
-                _LOGGER.error("Unable to update device controls: Unexpected error", exc_info=ex)
-                raise
+                except Exception as ex:
+                    _LOGGER.error("Unable to update device controls: Unexpected error", exc_info=ex)
+                    raise
 
     async def __update_advanced_settings(
         self,
@@ -801,31 +806,32 @@ class ACInfinityService:
             device_port: 0 for controller settings, or the port number for port settings
             key_values: a list of key/value pairs to update, as a tuple of (setting_key, new_value)
         """
-        try_count = 0
-        while True:
-            try:
-                await self._client.update_device_settings(controller_id, device_port, device_name, key_values)
-                return
+        async with self._update_lock:
+            try_count = 0
+            while True:
+                try:
+                    await self._client.update_device_settings(controller_id, device_port, device_name, key_values)
+                    return
 
-            except (
-                ACInfinityClientCannotConnect,
-                ACInfinityClientRequestFailed,
-                aiohttp.ClientError,
-                asyncio.TimeoutError
-            ) as ex:
-                if try_count < 4:
-                    try_count += 1
-                    _LOGGER.warning("Unable to update advanced controller settings. Retry attempt %s/4", str(try_count))
-                    await asyncio.sleep(1)
-                else:
-                    _LOGGER.error(ACINFINITY_API_ERROR, exc_info=ex)
+                except (
+                    ACInfinityClientCannotConnect,
+                    ACInfinityClientRequestFailed,
+                    aiohttp.ClientError,
+                    asyncio.TimeoutError
+                ) as ex:
+                    if try_count < 4:
+                        try_count += 1
+                        _LOGGER.warning("Unable to update advanced controller settings. Retry attempt %s/4", str(try_count))
+                        await asyncio.sleep(1)
+                    else:
+                        _LOGGER.error(ACINFINITY_API_ERROR, exc_info=ex)
+                        raise
+                except ACInfinityClientInvalidAuth as ex:
+                    _LOGGER.error("Unable to update advanced controller settings: Authentication failed", exc_info=ex)
                     raise
-            except ACInfinityClientInvalidAuth as ex:
-                _LOGGER.error("Unable to update advanced controller settings: Authentication failed", exc_info=ex)
-                raise
-            except Exception as ex:
-                _LOGGER.error("Unable to update advanced controller settings: Unexpected error", exc_info=ex)
-                raise
+                except Exception as ex:
+                    _LOGGER.error("Unable to update advanced controller settings: Unexpected error", exc_info=ex)
+                    raise
 
     async def __update_ai_control_and_settings(
         self,
@@ -840,32 +846,33 @@ class ACInfinityService:
             device_port: the index of the port on the controller
             key_values: a list of key/value pairs to update, as a tuple of (setting_key, new_value)
         """
-        try_count = 0
-        while True:
-            try:
-                await self._client.update_ai_device_control_and_settings(controller_id, device_port, key_values)
-                return
+        async with self._update_lock:
+            try_count = 0
+            while True:
+                try:
+                    await self._client.update_ai_device_control_and_settings(controller_id, device_port, key_values)
+                    return
 
-            except (
-                ACInfinityClientCannotConnect,
-                ACInfinityClientRequestFailed,
-                aiohttp.ClientError,
-                asyncio.TimeoutError
-            ) as ex:
+                except (
+                    ACInfinityClientCannotConnect,
+                    ACInfinityClientRequestFailed,
+                    aiohttp.ClientError,
+                    asyncio.TimeoutError
+                ) as ex:
 
-                if try_count < 4:
-                    try_count += 1
-                    _LOGGER.warning("Unable to update ai device controls and settings. Retry attempt %s/4", str(try_count))
-                    await asyncio.sleep(1)
-                else:
-                    _LOGGER.error(ACINFINITY_API_ERROR, exc_info=ex)
+                    if try_count < 4:
+                        try_count += 1
+                        _LOGGER.warning("Unable to update ai device controls and settings. Retry attempt %s/4", str(try_count))
+                        await asyncio.sleep(1)
+                    else:
+                        _LOGGER.error(ACINFINITY_API_ERROR, exc_info=ex)
+                        raise
+                except ACInfinityClientInvalidAuth as ex:
+                    _LOGGER.error("Unable to update ai device controls and settings: Authentication failed", exc_info=ex)
                     raise
-            except ACInfinityClientInvalidAuth as ex:
-                _LOGGER.error("Unable to update ai device controls and settings: Authentication failed", exc_info=ex)
-                raise
-            except Exception as ex:
-                _LOGGER.error("Unable to update ai device controls and settings: Unexpected error", exc_info=ex)
-                raise
+                except Exception as ex:
+                    _LOGGER.error("Unable to update ai device controls and settings: Unexpected error", exc_info=ex)
+                    raise
 
     async def close(self) -> None:
         """Close the client session when done"""
