@@ -23,7 +23,7 @@ The integration polls the AC Infinity cloud API and exposes device state, enviro
 
 ### Prerequisites
 
-- Python 3.13
+- Python 3.14
 - Git
 - Docker (for local Home Assistant development)
 - A valid AC Infinity account with at least one controller
