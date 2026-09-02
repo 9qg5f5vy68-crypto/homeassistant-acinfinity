@@ -574,12 +574,12 @@ SCHEDULE_EOD_VALUE = 1439  # 11:59pm, default for end time
 
 # AIRTAP register fans have no ports; the fan is modeled as port 0 of its own device.  Only the fields verified
 # against the cloud API are exposed as entities, everything else in the (controller-shaped) payload is ignored.
+# Online status is reported once, by the controller level binary sensor, since port 0 is the same device.
 AIRTAP_DEVICE_KEYS = frozenset({
     DeviceControlKey.AT_TYPE,
     DeviceControlKey.ON_SPEED,
     DeviceControlKey.OFF_SPEED,
     DevicePropertyKey.SPEAK,
-    DevicePropertyKey.ONLINE,
     DevicePropertyKey.REMAINING_TIME,
     CustomDevicePropertyKey.NEXT_STATE_CHANGE,
 })
