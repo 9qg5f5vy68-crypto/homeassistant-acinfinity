@@ -91,7 +91,6 @@ class ACInfinityFlowBase:
         """
         device_name = ac_infinity.get_controller_property(device_id, ControllerPropertyKey.DEVICE_NAME)
         device_code = ac_infinity.get_controller_property(device_id, ControllerPropertyKey.DEVICE_CODE)
-        port_count = ac_infinity.get_controller_property(device_id, ControllerPropertyKey.PORT_COUNT)
 
         entities = {}
         description_placeholders = {
@@ -117,7 +116,7 @@ class ACInfinityFlowBase:
             }
         })
 
-        for i in range(1, port_count + 1):
+        for i in ac_infinity.get_device_ports(device_id):
             entity_config_key = f"port_{i}"
             description_placeholders[entity_config_key] = ac_infinity.get_device_property(device_id, i, DevicePropertyKey.NAME)
             entities[vol.Required(entity_config_key, default=self.__get_saved_entity_conf_value(data, str(device_id), entity_config_key))] = selector(
