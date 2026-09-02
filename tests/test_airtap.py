@@ -285,3 +285,17 @@ class TestAirtapClient:
                 assert result == DEVICE_CONTROLS
         finally:
             await client.close()
+
+
+class TestNewDeviceDefaults:
+    """Devices or ports added after setup have no saved entity configuration; they must default to sensors only
+    instead of raising KeyError and taking the whole platform down."""
+
+    def test_unknown_device_defaults_to_sensors_only(self):
+        from custom_components.ac_infinity.core import enabled_fn_control, enabled_fn_sensor, enabled_fn_setting
+        entry = SimpleNamespace(data={ConfigurationKey.ENTITIES: {"known": {"port_1": EntityConfigValue.ALL}}})
+        assert enabled_fn_sensor(entry, "new-device", "port_0")
+        assert not enabled_fn_control(entry, "new-device", "port_0")
+        assert not enabled_fn_setting(entry, "new-device", "port_0")
+        assert not enabled_fn_control(entry, "known", "port_2")
+        assert enabled_fn_control(entry, "known", "port_1")

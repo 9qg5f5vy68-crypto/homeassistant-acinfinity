@@ -1263,16 +1263,26 @@ class ACInfinityEntities(list[ACInfinityEntity]):
             )
 
 
+def get_entity_config_value(entry: ConfigEntry, device_id: str, entity_config_key: str) -> str:
+    """The entity configuration chosen for a device / port, or the setup default (sensors only) when the device or
+    port was added to the account after the integration was configured and has no saved choice yet."""
+    return (
+        entry.data.get(ConfigurationKey.ENTITIES, {})
+        .get(device_id, {})
+        .get(entity_config_key, EntityConfigValue.SENSORS_ONLY)
+    )
+
+
 def enabled_fn_sensor(entry: ConfigEntry, device_id: str, entity_config_key: str) -> bool:
-    return entry.data[ConfigurationKey.ENTITIES][device_id][entity_config_key] != EntityConfigValue.DISABLE
+    return get_entity_config_value(entry, device_id, entity_config_key) != EntityConfigValue.DISABLE
 
 
 def enabled_fn_control(entry: ConfigEntry, device_id: str, entity_config_key: str) -> bool:
-    setting = entry.data[ConfigurationKey.ENTITIES][device_id][entity_config_key]
+    setting = get_entity_config_value(entry, device_id, entity_config_key)
     return setting == EntityConfigValue.ALL or setting == EntityConfigValue.SENSORS_AND_CONTROLS
 
 
 def enabled_fn_setting(entry: ConfigEntry, device_id: str, entity_config_key: str) -> bool:
-    setting = entry.data[ConfigurationKey.ENTITIES][device_id][entity_config_key]
+    setting = get_entity_config_value(entry, device_id, entity_config_key)
     return setting == EntityConfigValue.ALL or setting == EntityConfigValue.SENSORS_AND_SETTINGS
 
