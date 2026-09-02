@@ -293,7 +293,7 @@ class TestNewDeviceDefaults:
 
     def test_unknown_device_defaults_to_sensors_only(self):
         from custom_components.ac_infinity.core import enabled_fn_control, enabled_fn_sensor, enabled_fn_setting
-        entry = SimpleNamespace(data={ConfigurationKey.ENTITIES: {"known": {"port_1": EntityConfigValue.ALL}}})
+        entry = cast(ConfigEntry, SimpleNamespace(data={ConfigurationKey.ENTITIES: {"known": {"port_1": EntityConfigValue.ALL}}}))
         assert enabled_fn_sensor(entry, "new-device", "port_0")
         assert not enabled_fn_control(entry, "new-device", "port_0")
         assert not enabled_fn_setting(entry, "new-device", "port_0")
