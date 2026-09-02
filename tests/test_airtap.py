@@ -309,4 +309,4 @@ class TestNewDeviceDefaults:
         entities, placeholders = flow._build_entity_config_schema(ac_infinity, AIRTAP_DEVICE_ID, data={ConfigurationKey.ENTITIES: {}})
         assert placeholders["port_0"] == AIRTAP_NAME
         assert {str(k) for k in entities} == {"controller", "sensors", "port_0"}
-        assert all(k.default() == EntityConfigValue.SENSORS_ONLY for k in entities)
+        assert all(getattr(k, "default")() == EntityConfigValue.SENSORS_ONLY for k in entities)
