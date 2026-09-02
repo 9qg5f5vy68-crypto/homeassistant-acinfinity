@@ -70,8 +70,11 @@ class ACInfinityFlowBase:
             # ConfigFlow - we are setting the integration up for the first time.  Don't add excessive entities.
             return EntityConfigValue.SENSORS_ONLY
 
+        # devices / ports added to the account after setup have no saved value yet
         return (
-            data[ConfigurationKey.ENTITIES][device_id][entity_config_key]
+            data.get(ConfigurationKey.ENTITIES, {})
+            .get(device_id, {})
+            .get(entity_config_key, EntityConfigValue.SENSORS_ONLY)
         )
 
     def _build_entity_config_schema(

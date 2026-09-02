@@ -299,3 +299,14 @@ class TestNewDeviceDefaults:
         assert not enabled_fn_setting(entry, "new-device", "port_0")
         assert not enabled_fn_control(entry, "known", "port_2")
         assert enabled_fn_control(entry, "known", "port_1")
+
+    def test_options_flow_schema_defaults_for_unknown_device(self, mock_client):
+        """The options flow must build its form for a device that was added after setup."""
+        import asyncio
+        from custom_components.ac_infinity.config_flow import OptionsFlow
+        ac_infinity = asyncio.get_event_loop().run_until_complete(refreshed_service(mock_client))
+        flow = OptionsFlow()
+        entities, placeholders = flow._build_entity_config_schema(ac_infinity, AIRTAP_DEVICE_ID, data={ConfigurationKey.ENTITIES: {}})
+        assert placeholders["port_0"] == AIRTAP_NAME
+        assert {str(k) for k in entities} == {"controller", "sensors", "port_0"}
+        assert all(k.default() == EntityConfigValue.SENSORS_ONLY for k in entities)
